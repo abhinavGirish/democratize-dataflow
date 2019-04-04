@@ -38,6 +38,44 @@
       </plugin>
 
       <plugin>
+        <groupId>com.github.os72</groupId>
+        <artifactId>protoc-jar-maven-plugin</artifactId>
+        <version>3.7.0.2</version>
+        <executions>
+                <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                                <goal>run</goal>
+                        </goals>
+                </execution>
+        </executions>
+    </plugin>
+
+    <plugin>
+        <groupId>com.github.os72</groupId>
+        <artifactId>protoc-jar-maven-plugin</artifactId>
+        <version>3.7.0.1</version>
+        <executions>
+                <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                                <goal>run</goal>
+                        </goals>
+                        <configuration>
+                                <addProtoSources>all</addProtoSources>
+                                <includeMavenTypes>direct</includeMavenTypes>
+                                <includeDirectories>
+                                        <include>src/main/more_proto_imports</include>
+                                </includeDirectories>
+                                <inputDirectories>
+                                        <include>src/main/protobuf</include>
+                                </inputDirectories>
+                        </configuration>
+                </execution>
+        </executions>
+    </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>2.3</version>
@@ -98,6 +136,28 @@
             <cleanupDaemonThreads>false</cleanupDaemonThreads>
           </configuration>
         </plugin>
+
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>${maven-shade-plugin.version}</version>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>shade</goal>
+                    </goals>
+                    <configuration>
+                        <relocations>
+                            <relocation>
+                                <pattern>com.google.protobuf</pattern>
+                                <shadedPattern>${project.groupId}.${project.artifactId}.shaded.protobuf</shadedPattern>
+                            </relocation>
+                        </relocations>
+                    </configuration>
+                </execution>
+            </executions>
+    </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -218,6 +278,19 @@
       <groupId>com.google.apis</groupId>
       <artifactId>google-api-services-language</artifactId>
       <version>v1-rev467-1.25.0</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>google-cloud-language</artifactId>
+        <version>1.66.0</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.github.os72</groupId>
+        <artifactId>protoc-jar-maven-plugin</artifactId>
+        <version>3.7.0.2</version>
+        <type>maven-plugin</type>
     </dependency>
   </dependencies>
 </project>

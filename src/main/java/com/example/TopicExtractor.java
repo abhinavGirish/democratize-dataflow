@@ -47,6 +47,7 @@ public class TopicExtractor {
                 c.output(response);
              }
         }
+  }
 
 
       /** A DoFn that converts a Word and Count into a printable string. */
@@ -136,5 +137,4 @@ public interface WordCountOptions extends PipelineOptions {
 
     p.run();
   }
-}
 }
