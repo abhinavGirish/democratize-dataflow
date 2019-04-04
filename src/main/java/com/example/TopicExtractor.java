@@ -18,6 +18,13 @@ import com.google.cloud.dataflow.sdk.util.gcsfs.GcsPath;
 import com.google.cloud.dataflow.sdk.values.KV;
 import com.google.cloud.dataflow.sdk.values.PCollection;
 import com.google.cloud.language.v1.LanguageServiceClient;
+import com.google.cloud.language.v1.Document;
+import com.google.cloud.language.v1.Document.Type;
+import com.google.cloud.language.v1.ClassifyTextResponse;
+import com.google.cloud.language.v1.ClassifyTextRequest;
+import com.google.cloud.language.v1.ClassificationCategory;
+import com.example.WordCount.CountWords;
+import com.example.WordCount.ExtractWordsFn;
 
 public class TopicExtractor {
 
@@ -25,7 +32,7 @@ public class TopicExtractor {
   public static class ExtractTopics extends DoFn<String, ClassifyTextResponse>{
       @Override 
       public void processElement(ProcessContext c){
-          // use Language service client here to get topics....
+          // use Language service client here to get topics
           try (LanguageServiceClient language = LanguageServiceClient.create()) {
                 String text = c.element();
                 // set content to the text string
@@ -36,7 +43,8 @@ public class TopicExtractor {
                 ClassifyTextRequest request = ClassifyTextRequest.newBuilder()
                     .setDocument(doc)
                     .build();
-                c.output(request);
+                ClassifyTextResponse response = language.classifyText(request);
+                c.output(response);
              }
         }
 
@@ -85,6 +93,35 @@ public class TopicExtractor {
     }
   }
 
+public interface WordCountOptions extends PipelineOptions {
+    @Description("Path of the file to read from")
+    @Default.String("gs://democratize-bucket/input/scraper_input.txt")
+    String getInputFile();
+    void setInputFile(String value);
+
+    @Description("Path of the file to write to")
+    @Default.InstanceFactory(OutputFactory.class)
+    String getOutput();
+    void setOutput(String value);
+
+    /**
+     * Returns "gs://${YOUR_STAGING_DIRECTORY}/counts.txt" as the default destination.
+     */
+    class OutputFactory implements DefaultValueFactory<String> {
+      @Override
+      public String create(PipelineOptions options) {
+        DataflowPipelineOptions dataflowOptions = options.as(DataflowPipelineOptions.class);
+        if (dataflowOptions.getStagingLocation() != null) {
+          return GcsPath.fromUri(dataflowOptions.getStagingLocation())
+              .resolve("counts.txt").toString();
+        } else {
+          throw new IllegalArgumentException("Must specify --output or --stagingLocation");
+        }
+      }
+    }
+
+  }
+
     public static void main(String[] args) {
     WordCountOptions options = PipelineOptionsFactory.fromArgs(args).withValidation()
       .as(WordCountOptions.class);
@@ -95,8 +132,9 @@ public class TopicExtractor {
     p.apply(TextIO.Read.named("ReadLines").from(options.getInputFile())) // reads each line and converts to string;set input file to scraper output file
      .apply(ParDo.of(new ExtractTopics()))
      .apply(ParDo.of(new FormatAsTextFn())) // formatting responses into actual strings
-     .apply(TextIO.Write.named("WriteCounts").to(options.getOutput()));
+     .apply(TextIO.Write.named("WriteTopics").to(options.getOutput()));
 
     p.run();
   }
+}
 }

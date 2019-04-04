@@ -213,5 +213,11 @@
       <artifactId>junit</artifactId>
       <version>4.11</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.google.apis</groupId>
+      <artifactId>google-api-services-language</artifactId>
+      <version>v1-rev467-1.25.0</version>
+    </dependency>
   </dependencies>
 </project>
