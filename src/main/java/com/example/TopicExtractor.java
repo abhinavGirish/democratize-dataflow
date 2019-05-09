@@ -25,6 +25,7 @@ import com.google.cloud.language.v1.ClassifyTextRequest;
 import com.google.cloud.language.v1.ClassificationCategory;
 import com.example.WordCount.CountWords;
 import com.example.WordCount.ExtractWordsFn;
+import java.io.*;
 
 public class TopicExtractor {
 
@@ -45,6 +46,8 @@ public class TopicExtractor {
                     .build();
                 ClassifyTextResponse response = language.classifyText(request);
                 c.output(response);
+             } catch(IOException E){
+                 E.printStackTrace();
              }
         }
   }
